@@ -1,0 +1,193 @@
+{
+  "name": "Daily Weather Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "572287a7-9c70-4024-9dcd-6d084b10dc76",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=London&appid=723cdf3da29226318d3579df25b13f7f&units=metric",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "appid",
+              "value": "723cdf3da29226318d3579df25b13f7f"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b64446e9-5ecf-410a-87f6-11e1b8fd417c",
+      "name": "HTTP Request",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse weather data from API response\nconst weatherData = $input.item.json;\n\n// Extract weather information\nconst city = weatherData.name;\nconst temperature = weatherData.main.temp;\nconst temperatureUnit = 'C';\nconst condition = weatherData.weather[0].description;\nconst humidity = weatherData.main.humidity;\nconst windSpeed = weatherData.wind.speed;\n\n// Build formatted summary\nconst summary = `- Daily Weather - ${city}\\n- Temp: ${temperature}°${temperatureUnit}\\n- Condition: ${condition}\\n- Humidity: ${humidity}%\\n- Wind: ${windSpeed} km/h`;\n\n// Determine alert type based on rules\nlet alertType = 'none';\nconst conditionLower = condition.toLowerCase();\n\nif (conditionLower.includes('rain') || conditionLower.includes('snow') || \n    conditionLower.includes('drizzle') || conditionLower.includes('storm') || \n    conditionLower.includes('thunder')) {\n  alertType = 'precipitation';\n} else if (temperature >= 32) {\n  alertType = 'heat';\n} else if (temperature <= 0) {\n  alertType = 'frost';\n}\n\n// Add alert message if applicable\nlet alertMessage = '';\nif (alertType === 'precipitation') {\n  alertMessage = 'Alert: Rain Expected Today';\n} else if (alertType === 'heat') {\n  alertMessage = 'Alert: Heat Warning';\n} else if (alertType === 'frost') {\n  alertMessage = 'Alert: Frost Warning';\n}\n\nconst fullSummary = alertMessage ? `${summary}\\n\\n${alertMessage}` : summary;\n\n// Return formatted data\nreturn [{\n  json: {\n    city: city,\n    temperature: temperature,\n    temperatureUnit: temperatureUnit,\n    condition: condition,\n    humidity: humidity,\n    windSpeed: windSpeed,\n    alertType: alertType,\n    summary: fullSummary,\n    rawResponse: weatherData,\n    runAt: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "8154cfa1-fd93-4427-a9fa-dea5c80acb11",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "tableId": "weather_logs"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -160
+      ],
+      "id": "3a5ebef3-5176-4b70-a75f-0021ed901df5",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "YTgXjBnfDJeHBXdx",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "likhithatadikonda19@gmail.com",
+        "toEmail": "likhithatadikonda19@gmail.com",
+        "subject": "=Daily Weather for {{ $json.city }} - {{ $now.format('YYYY-MM-DD') }}",
+        "html": "=<html>\n<body>\n<h2>Daily Weather Report</h2>\n<pre>{{ $json.summary }}</pre>\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        656,
+        0
+      ],
+      "id": "8d01cb1c-a1ab-4301-ab28-1cfee7037d91",
+      "name": "Send email",
+      "webhookId": "96e717f3-45f9-4ec9-8d39-769e820323d5",
+      "credentials": {
+        "smtp": {
+          "id": "ZWceyjfgyCHZ99A4",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        560,
+        352
+      ],
+      "id": "b3283899-df60-4a86-9a22-84467302434e"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Define multiple cities to fetch weather for\nconst cities = ['London', 'New York', 'Tokyo', 'Paris', 'Sydney'];\n\n// Return one item for each city\nreturn cities.map(city => ({\n  json: { city: city }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        144
+      ],
+      "id": "1101db67-b570-4c36-af51-90a8a57aa3e7",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        []
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "82902386-2d1c-4787-8dde-8a239cfd7b00",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "207617ec7bc7f9cc5b349634b44e49b48ef31a18f4d1e969788a66012ccfddc3"
+  },
+  "id": "QGyRpvGaQZu7cmdQ",
+  "tags": []
+}
