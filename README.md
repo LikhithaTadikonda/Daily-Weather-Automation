@@ -116,3 +116,12 @@ After importing, configure these nodes:
 - Add Gmail SMTP credentials
 - Update From/To email addresses
 - Customize subject line if needed
+
+#### Execution:
+<img width="939" height="419" alt="image" src="https://github.com/user-attachments/assets/9dfd1d31-d679-40a9-9f3b-2861ef7962e4" />
+
+#### Live Output:
+<img width="941" height="296" alt="image" src="https://github.com/user-attachments/assets/038b2eb8-e101-4cb9-830d-3e20d8f8a483" />
+
+
+
