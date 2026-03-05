@@ -12,12 +12,12 @@
 3. ** Activation Time**: New API keys take 1-2 hours to activate
 4. **Test API Key** (after activation):
 https://api.openweathermap.org/data/2.5/weather?q=London&appid=723cdf3da2922631843579df25b13f7f&units=metric
-5. Retrieve:
-● City
-● Temperature
-● Weather condition/description
-● Humidity
-● Wind speed
+5. Retrieve: <br>
+● City <br>
+● Temperature <br>
+● Weather condition/description  <br>
+● Humidity <br>
+● Wind speed <br>
 Parse the JSON response and prepare the data for downstream processing.
 
 ### Configure in n8n:
@@ -116,18 +116,18 @@ After importing, configure these nodes:
 #### 2. Supabase Node
 - Add Supabase credentials
 - Select `weather_logs` table
-Recommended schema:
-Column          Type
-id              UUID/serial
-run_at          timestamp
-city             text
-temperature      float
-temperature_unit text
-condition        text
-humidity         int
-wind_speed       float
-alert_type       text
-raw_response      json/text
+- Recommended schema:
+● Column        :  Type<br>
+● id           :   UUID/serial <br>
+● run_at        :  timestamp <br>
+● city           :  text <br>
+● temperature     : float <br>
+● temperature_unit : text <br>
+● condition       : text <br>
+● humidity     :    int <br>
+● wind_speed  :     float <br>
+● alert_type    :   text <br>
+● raw_response   :   json/text <br>
 Use Supabase REST API or Postgres connection through n8n
 - Ensure operation is set to `Create`
 
