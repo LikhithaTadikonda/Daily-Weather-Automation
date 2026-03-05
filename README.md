@@ -12,7 +12,13 @@
 3. ** Activation Time**: New API keys take 1-2 hours to activate
 4. **Test API Key** (after activation):
 https://api.openweathermap.org/data/2.5/weather?q=London&appid=723cdf3da2922631843579df25b13f7f&units=metric
-
+5. Retrieve:
+● City
+● Temperature
+● Weather condition/description
+● Humidity
+● Wind speed
+Parse the JSON response and prepare the data for downstream processing.
 
 ### Configure in n8n:
 - Open **HTTP Request** node
@@ -110,12 +116,26 @@ After importing, configure these nodes:
 #### 2. Supabase Node
 - Add Supabase credentials
 - Select `weather_logs` table
+Recommended schema:
+Column          Type
+id              UUID/serial
+run_at          timestamp
+city             text
+temperature      float
+temperature_unit text
+condition        text
+humidity         int
+wind_speed       float
+alert_type       text
+raw_response      json/text
+Use Supabase REST API or Postgres connection through n8n
 - Ensure operation is set to `Create`
 
 #### 3. Send Email Node
 - Add Gmail SMTP credentials
 - Update From/To email addresses
-- Customize subject line if needed
+- Subject: Daily Weather for <CITY> – <DATE>
+- Body: Weather summary + alert
 
 #### Execution:
 <img width="939" height="419" alt="image" src="https://github.com/user-attachments/assets/9dfd1d31-d679-40a9-9f3b-2861ef7962e4" />
@@ -123,5 +143,18 @@ After importing, configure these nodes:
 #### Live Output:
 <img width="941" height="296" alt="image" src="https://github.com/user-attachments/assets/038b2eb8-e101-4cb9-830d-3e20d8f8a483" />
 
-
+Weather Logic & Alert Rules
+Normalize temperature to °C or °F.
+Build a formatted summary, eg:
+- Daily Weather - London
+- Temp: 14 C
+- Humidity 76%
+- Wind: 12 km/hr
+Alert: Rain Expected Today
+Determine the alert type using simple rules:
+● If condition contains rain, snow, drizzle, storm, thunder → precipitation alert
+● If temperature > 32°C / 90°F → heat alert
+● If temperature < 0°C / 32°F → frost alert
+● Otherwise → none
+Use any combination of IF node, Switch node, Code node, or AI Agent node.
 
